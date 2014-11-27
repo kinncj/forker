@@ -1,4 +1,6 @@
 {
+  "name" : "kinncj/forker",
+  "version" : "1.0.0",
   "require" : {
     "symfony/finder" : "dev-master",
     "symfony/console" : "dev-master"
