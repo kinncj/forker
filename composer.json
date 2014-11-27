@@ -1,0 +1,9 @@
+{
+  "require" : {
+    "symfony/finder" : "dev-master",
+    "symfony/console" : "dev-master"
+  },
+  "require-dev" : {
+    "phpunit/phpunit" : "=4.3.5"
+  }
+}
