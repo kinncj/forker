@@ -18,5 +18,8 @@
             "homepage": "http://about.me/kinncj",
             "role": "Developer"
         }
+    ],
+  "license": [
+       "GPL-2.0"
     ]
 }
