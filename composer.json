@@ -18,8 +18,12 @@
             "homepage": "http://about.me/kinncj",
             "role": "Developer"
         }
-    ],
+  ],
   "license": [
        "GPL-2.0"
-    ]
+    ],
+  "bin": ["forker"],
+  "config": {
+      "bin-dir": "./"
+  }
 }
