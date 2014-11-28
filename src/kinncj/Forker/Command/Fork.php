@@ -26,8 +26,8 @@ class Fork extends Command
         ->setName('forker:fork')
         ->setDescription('Fork github repositories')
         ->addOption('all', 'a', InputOption::VALUE_NONE, 'Clone all the repositories')
-        ->addArgument('username', InputArgument::REQUIRED, 'Your github username')
-        ->addArgument('password', InputArgument::REQUIRED, 'Your github password')
+        ->addOption('username', 'u', InputOption::VALUE_OPTIONAL, 'Your github username')
+        ->addOption('password', 'p', InputOption::VALUE_OPTIONAL, 'Your github password')
         ->addArgument('target', InputArgument::REQUIRED, 'The target username')
         ->addArgument('repository', InputArgument::OPTIONAL, 'Clone a specific repository', false);
     }
@@ -38,10 +38,19 @@ class Fork extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $dialog = $this->getHelper('dialog');
         try {
             $client    = new Client();
-            $username = $input->getArgument('username');
-            $password = $input->getArgument('password');
+
+            $username  = $input->getOption('username');
+            if (! $username) {
+                $username = $dialog->ask($output, 'Please enter your GitHub username: ');
+            }
+
+            $password  = $input->getOption('password');
+            if (! $password) {
+                $password = $dialog->askHiddenResponse($output, 'Please enter your GitHub password: ');
+            }
 
             $client->authenticate($username, $password, Client::AUTH_HTTP_PASSWORD);
 
