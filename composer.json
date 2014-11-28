@@ -10,5 +10,13 @@
     "psr-0" : {
       "kinncj\\" : "src/"
     }
-  }
+  },
+  "authors": [
+        {
+            "name": "Kinn Coelho Julião",
+            "email": "kinncj@php.net",
+            "homepage": "http://about.me/kinncj",
+            "role": "Developer"
+        }
+    ]
 }
