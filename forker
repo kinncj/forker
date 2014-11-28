@@ -11,4 +11,4 @@ for (( i=0;i<$ELEMENTS;i++)); do
     SCRIPT+=" ${args[${i}]}"
 done
 
-php bin/forker.php $SCRIPT
+php "$( dirname "${BASH_SOURCE[0]}" )/bin/forker.php" $SCRIPT
