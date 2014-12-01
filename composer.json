@@ -7,8 +7,8 @@
     "knplabs/packagist-api" : "dev-master"
   },
   "autoload" : {
-    "psr-0" : {
-      "kinncj\\" : "src/"
+    "psr-4" : {
+      "kinncj\\" : "src/kinncj/"
     }
   },
   "authors": [
