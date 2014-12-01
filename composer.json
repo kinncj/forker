@@ -7,23 +7,23 @@
     "knplabs/packagist-api" : "dev-master"
   },
   "autoload" : {
-    "psr-0" : {
-      "kinncj\\" : "src/"
+    "psr-4" : {
+      "kinncj\\" : "src/kinncj/"
     }
   },
   "authors": [
-        {
-            "name": "Kinn Coelho Julião",
-            "email": "kinncj@php.net",
-            "homepage": "http://about.me/kinncj",
-            "role": "Developer"
-        }
+    {
+      "name": "Kinn Coelho Julião",
+      "email": "kinncj@php.net",
+      "homepage": "http://about.me/kinncj",
+      "role": "Developer"
+    }
   ],
   "license": [
-       "GPL-2.0"
-    ],
+     "GPL-2.0"
+  ],
   "bin": ["forker"],
   "config": {
-      "bin-dir": "./"
+    "bin-dir": "./"
   }
 }

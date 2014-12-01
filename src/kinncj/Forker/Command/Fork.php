@@ -39,19 +39,19 @@ class Fork extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dialog = $this->getHelper('dialog');
+
+        $username  = $input->getOption('username');
+        if (! $username) {
+            $username = $dialog->ask($output, 'Please enter your GitHub username: ');
+        }
+
+        $password  = $input->getOption('password');
+        if (! $password) {
+            $password = $dialog->askHiddenResponse($output, 'Please enter your GitHub password: ');
+        }
+
         try {
             $client    = new Client();
-
-            $username  = $input->getOption('username');
-            if (! $username) {
-                $username = $dialog->ask($output, 'Please enter your GitHub username: ');
-            }
-
-            $password  = $input->getOption('password');
-            if (! $password) {
-                $password = $dialog->askHiddenResponse($output, 'Please enter your GitHub password: ');
-            }
-
             $client->authenticate($username, $password, Client::AUTH_HTTP_PASSWORD);
 
             $forkService          = $this->getForkService($input, $client);
@@ -64,10 +64,9 @@ class Fork extends Command
         } catch (GithubRuntimeException $exception) {
             $message = $exception->getMessage();
             $message = "<error>{$message}</error>";
-        }
-        finally {
-            $output->writeln($message);
 
+        } finally {
+            $output->writeln($message);
         }
     }
 
@@ -95,7 +94,7 @@ class Fork extends Command
 
     /**
      *
-     * @param array $data
+     * @param string[] $data
      * @return string
      */
     protected function formatMessage(array $data = array())
