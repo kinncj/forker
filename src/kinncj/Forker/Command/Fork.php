@@ -52,7 +52,6 @@ class Fork extends Command
 
         try {
             $client    = new Client();
-
             $client->authenticate($username, $password, Client::AUTH_HTTP_PASSWORD);
 
             $forkService          = $this->getForkService($input, $client);
@@ -95,7 +94,7 @@ class Fork extends Command
 
     /**
      *
-     * @param array $data
+     * @param string[] $data
      * @return string
      */
     protected function formatMessage(array $data = array())
