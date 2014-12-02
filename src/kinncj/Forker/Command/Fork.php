@@ -55,18 +55,12 @@ class Fork extends Command
             $client->authenticate($username, $password, Client::AUTH_HTTP_PASSWORD);
 
             $forkService          = $this->getForkService($input, $client);
-            $forkedRepositoryList = $forkService->fork();
-            $message              = $this->formatMessage($forkedRepositoryList);
+            $forkServiceReponse   = $forkService->fork();
 
-        } catch (\InvalidArgumentException $exception) {
-            $message = $exception->getMessage();
-
-        } catch (GithubRuntimeException $exception) {
-            $message = $exception->getMessage();
-            $message = "<error>{$message}</error>";
-
-        } finally {
-            $output->writeln($message);
+            $this->displaySuccess($output, $forkServiceReponse['success']);
+            $this->displayFailure($output, $forkServiceReponse['error']);
+        } catch (GithubRuntimeException $githubRuntimeException) {
+            $output->writeln('<error>' . $githubRuntimeException->getMessage() . '</error>');
         }
     }
 
@@ -85,7 +79,7 @@ class Fork extends Command
         $target     = $input->getArgument('target');
         $remote     = new Remote($target, $client);
 
-        if ( ! $forkAll && ! $repository) {
+        if (! $forkAll && ! $repository) {
             throw new \InvalidArgumentException("<comment>You must provide a repository OR the --all option</comment>");
         }
 
@@ -93,24 +87,48 @@ class Fork extends Command
     }
 
     /**
-     *
-     * @param string[] $data
-     * @return string
+     * @param  OutputInterface $output
+     * @param  array[]         $repositories
+     * @return null
      */
-    protected function formatMessage(array $data = array())
+    protected function displaySuccess(OutputInterface $output, array $repositories)
     {
-        $message = "";
-
-        if (count($data["success"]) > 0) {
-            $message .= "\n\n<comment>Forked repositories<comment>\n";
-            $message .= "<info>".implode("</info>\n<info>", $data["success"])."</info>\n";
+        if (empty($repositories)) {
+            return;
         }
 
-        if (count($data["error"]) > 0) {
-            $message .= "\n\n<comment>Non-forked repositories<comment>\n";
-            $message .= "<error>".implode("</error>\n<error>", $data["error"])."</error>\n";
+        $output->writeln('<comment>Forked repositories</comment>');
+        foreach ($repositories as $repositoryName => $repositoryInfo) {
+            $output->writeln(
+                sprintf(
+                    '- %s: <info>%s</info>',
+                    $repositoryName,
+                    $repositoryInfo['full_name']
+                )
+            );
+        }
+    }
+
+    /**
+     * @param  OutputInterface $output
+     * @param  Exception[]     $repositories
+     * @return null
+     */
+    protected function displayFailure(OutputInterface $output, array $repositories)
+    {
+        if (empty($repositories)) {
+            return;
         }
 
-        return $message;
+        $output->writeln('<comment>Non-forked repositories</comment>');
+        foreach ($repositories as $repositoryName => $exception) {
+            $output->writeln(
+                sprintf(
+                    '- %s: <error>%s</error>',
+                    $repositoryName,
+                    $exception->getMessage()
+                )
+            );
+        }
     }
 }
