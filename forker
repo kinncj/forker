@@ -11,4 +11,5 @@ for (( i=0;i<$ELEMENTS;i++)); do
     SCRIPT+=" ${args[${i}]}"
 done
 
-php "$( dirname "${BASH_SOURCE[0]}" )/bin/forker.php" $SCRIPT
+
+php "$(dirname $(test -L "${0}" && readlink "${0}" || echo "${0}"))/bin/forker.php" $SCRIPT
