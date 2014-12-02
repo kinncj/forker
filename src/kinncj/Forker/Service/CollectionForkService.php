@@ -2,7 +2,6 @@
 namespace kinncj\Forker\Service;
 
 use kinncj\Forker\Repository\RepositoryInterface;
-
 use Github\Exception\RuntimeException as GithubRuntimeException;
 
 class CollectionForkService implements ForkServiceInterface
@@ -27,16 +26,13 @@ class CollectionForkService implements ForkServiceInterface
         $repositoryList       = $this->getRepositoryList();
         $forkedRepositoryList = array("success" => array(), "error" => array());
 
-        foreach($repositoryList as $id => $repository) {
+        foreach ($repositoryList as $id => $repository) {
+            $repositoryName = $repository['name'];
             try {
-                $this->repository
-                    ->fork(
-                        $repository['name']
-                    );
-
-                $forkedRepositoryList["success"][] = $repository['name'];
+                $forkResponse = $this->repository->fork($repositoryName);
+                $forkedRepositoryList['success'][$repositoryName] = $forkResponse;
             } catch (GithubRuntimeException $exception) {
-                $forkedRepositoryList["error"][] = "{$repository['name']}: ".$exception->getMessage();
+                $forkedRepositoryList['error'][$repositoryName] = $exception;
             }
         }
 

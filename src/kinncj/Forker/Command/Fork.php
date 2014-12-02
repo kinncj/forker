@@ -25,7 +25,8 @@ class Fork extends Command
         $this
         ->setName('forker:fork')
         ->setDescription('Fork github repositories')
-        ->addOption('all', 'a', InputOption::VALUE_NONE, 'Clone all the repositories')
+        ->addOption('all', 'a', InputOption::VALUE_NONE, 'Fork all the repositories')
+        ->addOption('clone', 'c', InputOption::VALUE_NONE, 'Clone forked repositories')
         ->addOption('username', 'u', InputOption::VALUE_OPTIONAL, 'Your github username')
         ->addOption('password', 'p', InputOption::VALUE_OPTIONAL, 'Your github password')
         ->addArgument('target', InputArgument::REQUIRED, 'The target username')
@@ -55,18 +56,17 @@ class Fork extends Command
             $client->authenticate($username, $password, Client::AUTH_HTTP_PASSWORD);
 
             $forkService          = $this->getForkService($input, $client);
-            $forkedRepositoryList = $forkService->fork();
-            $message              = $this->formatMessage($forkedRepositoryList);
+            $forkServiceReponse   = $forkService->fork();
 
-        } catch (\InvalidArgumentException $exception) {
-            $message = $exception->getMessage();
+            $this->displaySuccess($output, $forkServiceReponse['success']);
+            $this->displayFailure($output, $forkServiceReponse['error']);
 
-        } catch (GithubRuntimeException $exception) {
-            $message = $exception->getMessage();
-            $message = "<error>{$message}</error>";
-
-        } finally {
-            $output->writeln($message);
+            if ($input->getOption('clone') && ! empty($forkServiceReponse['success'])) {
+                $output->writeln('<comment>Cloning repositories</comment>');
+                $this->cloneRepositories($output, $forkServiceReponse['success']);
+            }
+        } catch (GithubRuntimeException $githubRuntimeException) {
+            $output->writeln('<error>' . $githubRuntimeException->getMessage() . '</error>');
         }
     }
 
@@ -85,7 +85,7 @@ class Fork extends Command
         $target     = $input->getArgument('target');
         $remote     = new Remote($target, $client);
 
-        if ( ! $forkAll && ! $repository) {
+        if (! $forkAll && ! $repository) {
             throw new \InvalidArgumentException("<comment>You must provide a repository OR the --all option</comment>");
         }
 
@@ -93,24 +93,66 @@ class Fork extends Command
     }
 
     /**
-     *
-     * @param string[] $data
-     * @return string
+     * @param  array[] $repositories
+     * @return null
      */
-    protected function formatMessage(array $data = array())
+    protected function cloneRepositories(array $repositories)
     {
-        $message = "";
+        foreach ($repositories as $repositoryName => $repositoryInfo) {
+            $forkUrl = $repositoryInfo['ssh_url'];
+            $canonicalUrl = $repositoryInfo['parent']['ssh_url'];
 
-        if (count($data["success"]) > 0) {
-            $message .= "\n\n<comment>Forked repositories<comment>\n";
-            $message .= "<info>".implode("</info>\n<info>", $data["success"])."</info>\n";
+            shell_exec(sprintf('git clone %s %s', escapeshellarg($forkUrl), escapeshellarg($repositoryName)));
+            chdir(getcwd() . '/' . $repositoryName);
+            shell_exec(sprintf('git remote add upstream %s', escapeshellarg($canonicalUrl)));
+            shell_exec('git fetch upstream');
+            chdir(getcwd() . '/..');
+        }
+    }
+
+    /**
+     * @param  OutputInterface $output
+     * @param  array[]         $data
+     * @return null
+     */
+    protected function displaySuccess(OutputInterface $output, array $repositories)
+    {
+        if (empty($repositories)) {
+            return;
         }
 
-        if (count($data["error"]) > 0) {
-            $message .= "\n\n<comment>Non-forked repositories<comment>\n";
-            $message .= "<error>".implode("</error>\n<error>", $data["error"])."</error>\n";
+        $output->writeln('<comment>Forked repositories</comment>');
+        foreach ($repositories as $repositoryName => $repositoryInfo) {
+            $output->writeln(
+                sprintf(
+                    '- %s: <info>%s</info>',
+                    $repositoryName,
+                    $repositoryInfo['full_name']
+                )
+            );
+        }
+    }
+
+    /**
+     * @param  OutputInterface $output
+     * @param  Exception[]     $repositories
+     * @return null
+     */
+    protected function displayFailure(OutputInterface $output, array $repositories)
+    {
+        if (empty($repositories)) {
+            return;
         }
 
-        return $message;
+        $output->writeln('<comment>Non-forked repositories</comment>');
+        foreach ($repositories as $repositoryName => $exception) {
+            $output->writeln(
+                sprintf(
+                    '- %s: <error>%s</error>',
+                    $repositoryName,
+                    $exception->getMessage()
+                )
+            );
+        }
     }
 }
