@@ -25,7 +25,8 @@ class Fork extends Command
         $this
         ->setName('forker:fork')
         ->setDescription('Fork github repositories')
-        ->addOption('all', 'a', InputOption::VALUE_NONE, 'Clone all the repositories')
+        ->addOption('all', 'a', InputOption::VALUE_NONE, 'Fork all the repositories')
+        ->addOption('clone', 'c', InputOption::VALUE_NONE, 'Clone forked repositories')
         ->addOption('username', 'u', InputOption::VALUE_OPTIONAL, 'Your github username')
         ->addOption('password', 'p', InputOption::VALUE_OPTIONAL, 'Your github password')
         ->addArgument('target', InputArgument::REQUIRED, 'The target username')
@@ -59,6 +60,11 @@ class Fork extends Command
 
             $this->displaySuccess($output, $forkServiceReponse['success']);
             $this->displayFailure($output, $forkServiceReponse['error']);
+
+            if ($input->getOption('clone') && ! empty($forkServiceReponse['success'])) {
+                $output->writeln('<comment>Cloning repositories</comment>');
+                $this->cloneRepositories($output, $forkServiceReponse['success']);
+            }
         } catch (GithubRuntimeException $githubRuntimeException) {
             $output->writeln('<error>' . $githubRuntimeException->getMessage() . '</error>');
         }
@@ -87,8 +93,26 @@ class Fork extends Command
     }
 
     /**
+     * @param  array[] $repositories
+     * @return null
+     */
+    protected function cloneRepositories(array $repositories)
+    {
+        foreach ($repositories as $repositoryName => $repositoryInfo) {
+            $forkUrl = $repositoryInfo['ssh_url'];
+            $canonicalUrl = $repositoryInfo['parent']['ssh_url'];
+
+            shell_exec(sprintf('git clone %s %s', escapeshellarg($forkUrl), escapeshellarg($repositoryName)));
+            chdir(getcwd() . '/' . $repositoryName);
+            shell_exec(sprintf('git remote add upstream %s', escapeshellarg($canonicalUrl)));
+            shell_exec('git fetch upstream');
+            chdir(getcwd() . '/..');
+        }
+    }
+
+    /**
      * @param  OutputInterface $output
-     * @param  array[]         $repositories
+     * @param  array[]         $data
      * @return null
      */
     protected function displaySuccess(OutputInterface $output, array $repositories)
