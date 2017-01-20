@@ -104,7 +104,7 @@ class Fork extends Command
      * @param  array[] $repositories
      * @return null
      */
-    protected function cloneRepositories(array $repositories)
+    protected function cloneRepositories($output, array $repositories)
     {
         foreach ($repositories as $repositoryName => $repositoryInfo) {
             $forkUrl = $repositoryInfo['ssh_url'];
