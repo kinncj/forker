@@ -2,9 +2,10 @@
   "name" : "kinncj/forker",
   "version" : "1.0.0",
   "require" : {
-    "symfony/console" : "dev-master",
-    "knplabs/github-api" : "dev-master",
-    "knplabs/packagist-api" : "dev-master"
+    "symfony/console" : "^2.5",
+    "knplabs/github-api" : "^1.7",
+    "knplabs/packagist-api" : "dev-master",
+    "php-http/guzzle6-adapter": "^1.1"
   },
   "autoload" : {
     "psr-4" : {

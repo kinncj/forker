@@ -29,6 +29,7 @@ class Fork extends Command
         ->addOption('clone', 'c', InputOption::VALUE_NONE, 'Clone forked repositories')
         ->addOption('username', 'u', InputOption::VALUE_OPTIONAL, 'Your github username')
         ->addOption('password', 'p', InputOption::VALUE_OPTIONAL, 'Your github password')
+        ->addOption('url', 'url', InputOption::VALUE_OPTIONAL, 'url')
         ->addArgument('target', InputArgument::REQUIRED, 'The target username')
         ->addArgument('repository', InputArgument::OPTIONAL, 'Clone a specific repository', false);
     }
@@ -51,8 +52,15 @@ class Fork extends Command
             $password = $dialog->askHiddenResponse($output, 'Please enter your GitHub password: ');
         }
 
+        $url = $input->getOption('url');
+
         try {
-            $client    = new Client();
+            $client = new Client();
+
+            if ($url) {
+                $client->setEnterpriseUrl($url);
+            }
+
             $client->authenticate($username, $password, Client::AUTH_HTTP_PASSWORD);
 
             $forkService          = $this->getForkService($input, $client);
