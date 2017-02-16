@@ -54,7 +54,7 @@ class Remote implements RepositoryInterface
     public function findAll()
     {
         return $this->client
-            ->api('user')
+            ->api('organization')
             ->repositories($this->target);
     }
 }
